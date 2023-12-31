@@ -142,7 +142,7 @@ def seed_worker(worker_id):
     """
     Used in generating seed for the worker of torch.utils.data.Dataloader
     """
-    worker_seed = torch.initial_seed() % 2**32
+    worker_seed = torch.initial_seed() % 2 ** 32
     np.random.seed(worker_seed)
     random.seed(worker_seed)
 

@@ -1,4 +1,3 @@
-
 import argparse
 import json
 import os
@@ -34,7 +33,7 @@ def main(args: argparse.Namespace) -> None:
     model_config = config["model_config"]
     optim_config = config["optim_config"]
     optim_config["epochs"] = config["num_epochs"]
-    
+
     if not args.evalcodecname:
         # NOTE: for training
         codecname = args.traincodecname
@@ -90,7 +89,9 @@ def main(args: argparse.Namespace) -> None:
     if args.eval:
         model.load_state_dict(torch.load(args.model_path, map_location=device))
         print("Model loaded : {}".format(args.model_path))
-        eval_score_path = "{}/eval_results/{}/{}".format(os.path.dirname(args.model_path), codecname, config["eval_output"])
+        eval_score_path = "{}/eval_results/{}/{}".format(
+            os.path.dirname(args.model_path), codecname, config["eval_output"]
+        )
         produce_evaluation_file(eval_loader, model, device, eval_score_path)
         calculate_EER(cm_scores_file=eval_score_path, output_file=model_tag / "EER.txt")
         sys.exit(0)
@@ -191,7 +192,11 @@ def get_model(model_config: Dict, device: torch.device):
 
 
 def get_loader(
-    filelist_path: str, seed: int, config: dict, codec_name: str = None, eval: bool = False
+    filelist_path: str,
+    seed: int,
+    config: dict,
+    codec_name: str = None,
+    eval: bool = False,
 ) -> List[torch.utils.data.DataLoader]:
     """Make PyTorch DataLoaders for train / developement / evaluation"""
 
