@@ -5,6 +5,7 @@ exp_result/
 models/
 depreciated/
 LA/
+ckpts/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

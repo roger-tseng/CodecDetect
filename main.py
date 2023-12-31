@@ -88,8 +88,9 @@ def main(args: argparse.Namespace) -> None:
 
     # evaluates pretrained model and exit script
     if args.eval:
-        model.load_state_dict(torch.load(config["model_path"], map_location=device))
-        print("Model loaded : {}".format(config["model_path"]))
+        model.load_state_dict(torch.load(args.model_path, map_location=device))
+        print("Model loaded : {}".format(args.model_path))
+        eval_score_path = "{}/eval_results/{}/{}".format(os.path.dirname(args.model_path), codecname, config["eval_output"])
         produce_evaluation_file(eval_loader, model, device, eval_score_path)
         calculate_EER(cm_scores_file=eval_score_path, output_file=model_tag / "EER.txt")
         sys.exit(0)
@@ -365,6 +366,12 @@ if __name__ == "__main__":
         "--evalcodecname",
         type=str,
         default=None,
+        help="the evaluation codec",
+    )
+    parser.add_argument(
+        "--model_path",
+        type=str,
+        default="/media/hbwu/12TB/PublicData/aasist/exp_result/SpeechTokenizer_AASIST-L_ep100_bs24/weights/epoch_4_0.544.pth",
         help="the evaluation codec",
     )
     main(parser.parse_args())
