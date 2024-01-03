@@ -50,7 +50,7 @@ def pad(x, max_len=64600):
 def pad_random(x: np.ndarray, max_len: int = 64600):
     x_len = x.shape[0]
     # if duration is already long enough
-    if x_len >= max_len:
+    if x_len > max_len:
         stt = np.random.randint(x_len - max_len)
         return x[stt : stt + max_len]
 
