@@ -3,6 +3,8 @@ import numpy as np
 import soundfile as sf
 import torch
 from torch import Tensor
+import torchaudio
+from torchaudio.functional import resample
 from torch.utils.data import Dataset
 
 ___author__ = "Haibin Wu"
@@ -47,7 +49,7 @@ def pad(x, max_len=64600):
     return padded_x
 
 
-def pad_random(x: np.ndarray, max_len: int = 64600):
+def pad_random(x: Tensor, max_len: int = 64600):
     x_len = x.shape[0]
     # if duration is already long enough
     if x_len > max_len:
@@ -56,9 +58,8 @@ def pad_random(x: np.ndarray, max_len: int = 64600):
 
     # if too short
     num_repeats = int(max_len / x_len) + 1
-    padded_x = np.tile(x, (num_repeats))[:max_len]
+    padded_x = torch.tile(x, (num_repeats,))[:max_len]
     return padded_x
-
 
 class Dataset_Codec_Antispoofing(Dataset):
     def __init__(self, list_IDs, labels, base_dir, others=None):
@@ -69,6 +70,10 @@ class Dataset_Codec_Antispoofing(Dataset):
         self.base_dir = base_dir
         self.others = others  # include [spk, codecname]
         self.cut = 64600  # take ~4 sec audio (64600 samples)
+        self.resamplers = {
+            24000: torchaudio.transforms.Resample(24000, 16000),
+            44100: torchaudio.transforms.Resample(44100, 16000),
+        }
 
     def __len__(self):
         return len(self.list_IDs)
@@ -76,8 +81,19 @@ class Dataset_Codec_Antispoofing(Dataset):
     def __getitem__(self, index):
         key = self.list_IDs[index]
         others = self.others[index]
-        X, _ = sf.read(os.path.join(self.base_dir, key))
-        X_pad = pad_random(X, self.cut)
-        x_inp = Tensor(X_pad)
+        X, sr = sf.read(os.path.join(self.base_dir, key))
+        X = torch.from_numpy(X).float()
+        # assert sr == 16000
+        
+        if sr != 16000:
+            if sr in self.resamplers:
+                X = self.resamplers[sr](X)
+            else:
+                X = resample(
+                    X, sr, 16000
+                )
+        
+        assert len(X.shape) == 1
+        x_inp = pad_random(X, self.cut)
         y = self.labels[key]
         return x_inp, y, key, others
