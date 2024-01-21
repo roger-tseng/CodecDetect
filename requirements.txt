@@ -1,4 +1,8 @@
 torch>=1.6.0
+torchaudio
+tensorboard
 torchcontrib
 numpy
 soundfile
+packaging
+tqdm
