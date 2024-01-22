@@ -29,7 +29,7 @@ codec_list=(
     "funcodec-funcodec_en_libritts-16k-gr1nq32ds320"
     "funcodec-funcodec_en_libritts-16k-gr8nq32ds320"
     "funcodec-funcodec_en_libritts-16k-nq32ds320"
-    "funcodec-funcodec_zh_en_general_16k_nq32ds640"
+    "funcodec-funcodec_en_libritts-16k-nq32ds640"
     "funcodec-funcodec_zh_en_general_16k_nq32ds320"
     "funcodec-funcodec_zh_en_general_16k_nq32ds640"
 )
