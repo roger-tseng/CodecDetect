@@ -20,7 +20,7 @@ def calculate_EER(cm_scores_file, output_file, printout=True):
 
     if printout:
         with open(output_file, "w") as f_res:
-            f_res.write("\nCM SYSTEM\n")
+            f_res.write("{:.2f}\nCM SYSTEM\n".format(eer_cm * 100))
             f_res.write(
                 "\tEER\t\t= {:8.9f} % "
                 "(Equal error rate for countermeasure)\n".format(eer_cm * 100)
