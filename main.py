@@ -33,6 +33,7 @@ def main(args: argparse.Namespace) -> None:
     model_config = config["model_config"]
     optim_config = config["optim_config"]
     optim_config["epochs"] = config["num_epochs"]
+    config["database_path"] = args.database_path
 
     if not args.evalcodecname:
         # NOTE: for training
@@ -267,7 +268,7 @@ def produce_evaluation_file(
     score_list = []
     label_list = []
     others_list = []
-    for batch_x, label, utt_id, others in data_loader:
+    for batch_x, label, utt_id, others in tqdm(data_loader):
         batch_x = batch_x.to(device)
         with torch.no_grad():
             _, batch_out = model(batch_x)
@@ -330,6 +331,13 @@ def train_epoch(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="ASVspoof detection system")
+    parser.add_argument(
+        "--database_path",
+        dest="database_path",
+        type=str,
+        help="list of audio files",
+        default="/work/b07901163/CodecData/datalist.csv",
+    )
     parser.add_argument(
         "--config",
         dest="config",
