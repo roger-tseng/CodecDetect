@@ -12,8 +12,17 @@ pip install -r requirements.txt
   - gpu-driver: 470.161.03
 
 ### Running
+1. Training
+Available codecs are listed in the script.
+```bash
+bash train.sh <codec_name>
 ```
-bash run.sh
+2. Evaluation
+
+First, add paths to trained checkpoints to the script.
+Then adjust subsets to evaluate on.
+```bash
+bash eval_all.sh
 ```
 
 ### Acknowledgements

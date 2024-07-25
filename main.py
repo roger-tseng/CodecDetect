@@ -66,6 +66,8 @@ def main(args: argparse.Namespace) -> None:
     if args.comment:
         model_tag = model_tag + "_{}".format(args.comment)
     model_tag = output_dir / model_tag
+    if args.eval:
+        model_tag = model_tag / "eval"
     model_save_path = model_tag / "weights"
     eval_score_path = model_tag / config["eval_output"]
     writer = SummaryWriter(model_tag)
@@ -75,8 +77,8 @@ def main(args: argparse.Namespace) -> None:
     # set device
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print("Device: {}".format(device))
-    if device == "cpu":
-        raise ValueError("GPU not detected!")
+    # if device == "cpu":
+    #     raise ValueError("GPU not detected!")
 
     # define model architecture
     model = get_model(model_config, device)
