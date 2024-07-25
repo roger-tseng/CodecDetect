@@ -1,3 +1,4 @@
+## Train Fake Speech Detectors on CodecFake
 ### Getting started
 `requirements.txt` must be installed for execution. We state our experiment environment for those who prefer to simulate as similar as possible. 
 - Installing dependencies
@@ -13,6 +14,7 @@ pip install -r requirements.txt
 
 ### Running
 1. Training
+
 Available codecs are listed in the script.
 ```bash
 bash train.sh <codec_name>
