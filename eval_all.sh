@@ -4,7 +4,10 @@
 # each ckpt is evaluated on all codecs listed in $codec_list
 # resulting EERs are saved in eval/${train_codec_name}/${codec}/EER.txt
 
-stage=1
+if [ ! -e datalist.csv ]; then
+    echo "Downloading datalist.csv"
+    wget https://huggingface.co/datasets/rogertseng/CodecFake/resolve/main/datalist.csv?download=true
+fi
 
 models_list=(
     "ckpts/asvspoof_aasist/weights/AASIST.pth"
@@ -35,19 +38,18 @@ do
         "funcodec-funcodec_zh_en_general_16k_nq32ds320"
         "funcodec-funcodec_zh_en_general_16k_nq32ds640"
     )
-    if [ "$stage" -eq 1 ]; then
-        for codec in "${codec_list[@]}"; do
-            python main.py --eval \
-                        --evalcodecname ${codec} \
-                        --model_path ${model_path} \
-                        --config ${config}
-            # Aggregate EER results
-            for i in exp_result/${codec}_config_*/eval
-            do
-                echo "saving to eval/${train_codec_name}/${codec}"
-                mkdir -p eval/${train_codec_name}/${codec}
-                cp ${i}/EER.txt eval/${train_codec_name}/${codec}/EER.txt
-            done
+    for codec in "${codec_list[@]}"; do
+        python main.py --eval \
+                    --evalcodecname ${codec} \
+                    --model_path ${model_path} \
+                    --config ${config} \
+                    --database_path datalist.csv
+        # Aggregate EER results
+        for i in exp_result/${codec}_config_*/eval
+        do
+            echo "saving to eval/${train_codec_name}/${codec}"
+            mkdir -p eval/${train_codec_name}/${codec}
+            cp ${i}/EER.txt eval/${train_codec_name}/${codec}/EER.txt
         done
-    fi
+    done
 done

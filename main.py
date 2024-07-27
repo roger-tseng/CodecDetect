@@ -91,7 +91,7 @@ def main(args: argparse.Namespace) -> None:
     # evaluates pretrained model and exit script
     if args.eval:
         model.load_state_dict(torch.load(args.model_path, map_location=device))
-        print("Model loaded : {}".format(args.model_path))
+        print("Evaluating ckpt at: {}".format(args.model_path))
         eval_score_path = "{}/eval_results/{}/{}".format(
             os.path.dirname(args.model_path), codecname, config["eval_output"]
         )
@@ -338,14 +338,13 @@ if __name__ == "__main__":
         dest="database_path",
         type=str,
         help="list of audio files",
-        default="/work/b07901163/CodecData/datalist.csv",
+        default="datalist.csv",
     )
     parser.add_argument(
         "--config",
         dest="config",
         type=str,
         help="configuration file",
-        default="/media/hbwu/12TB/PublicData/aasist/config/AASIST.conf",
     )
     parser.add_argument(
         "--output_dir",
@@ -386,7 +385,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model_path",
         type=str,
-        default="/media/hbwu/12TB/PublicData/aasist/exp_result/SpeechTokenizer_AASIST-L_ep100_bs24/weights/epoch_4_0.544.pth",
         help="the evaluation codec",
     )
     main(parser.parse_args())

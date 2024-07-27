@@ -2,12 +2,18 @@
 
 stage=0
 traincodecname=$1 # SpeechTokenizer
-config=$2 # "./config/AASIST-L.conf"
+config=${2:-./config/AASIST-L.conf}
+
+if [ ! -e datalist.csv ]; then
+    echo "Downloading datalist.csv"
+    wget https://huggingface.co/datasets/rogertseng/CodecFake/resolve/main/datalist.csv?download=true
+fi
 
 echo "Training with ${traincodecname} using ${config}"
 python main.py \
     --config ${config} \
-    --traincodecname ${traincodecname}
+    --traincodecname ${traincodecname} \
+    --database_path datalist.csv
 
 codec_list=(
     "SpeechTokenizer"
