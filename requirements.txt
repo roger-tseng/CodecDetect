@@ -6,3 +6,4 @@ numpy
 soundfile
 packaging
 tqdm
+datasets

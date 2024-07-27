@@ -7,6 +7,8 @@ import torchaudio
 from torchaudio.functional import resample
 from torch.utils.data import Dataset
 
+from datasets import load_dataset
+
 ___author__ = "Haibin Wu"
 __email__ = "f07921092@ntu.edu.tw"
 
@@ -20,9 +22,19 @@ def genSpoof_list(dir_meta, codec_name="encodec", is_train=False, is_eval=False)
     others = []
 
     loaded_data = np.genfromtxt(dir_meta, delimiter=",", dtype=str)
-    base_dir = str(loaded_data[1, 0])
-    selected_data = loaded_data[np.isin(loaded_data[:, 3], [codec_name, "genuine"])]
+    base_dir = None
+    
+    is_correct_codec = np.isin(loaded_data[:, 3], [codec_name, "genuine"])
     # selected_data = loaded_data[(loaded_data[:, 3] == codec_name ) | (loaded_data[loaded_data[:, 3] == "genuine"])]
+    if is_train:
+        is_correct_speaker = ~np.isin(loaded_data[:, 2], DEV_SPK + EVAL_SPK)
+    elif is_eval:
+        is_correct_speaker = np.isin(loaded_data[:, 2], EVAL_SPK)
+    else:
+        is_correct_speaker = np.isin(loaded_data[:, 2], DEV_SPK)
+
+    selected_indices = np.where(is_correct_codec & is_correct_speaker)[0].tolist()
+    selected_data = loaded_data[is_correct_codec & is_correct_speaker]
 
     if is_train:
         selected_data = selected_data[~np.isin(selected_data[:, 2], DEV_SPK + EVAL_SPK)]
@@ -31,12 +43,10 @@ def genSpoof_list(dir_meta, codec_name="encodec", is_train=False, is_eval=False)
     else:
         selected_data = selected_data[np.isin(selected_data[:, 2], DEV_SPK)]
 
-    for line in selected_data:
-        wavpath, label, spkID, CodecName = line
-        file_list.append(wavpath)
-        others.append([spkID, CodecName])
-        d_meta[wavpath] = 1 if label == "genuine" else 0
-    return d_meta, file_list, base_dir, others
+    # for line in selected_data:
+    #     wavpath, label, spkID, CodecName = line
+    #     file_list.append(wavpath)
+    return d_meta, selected_indices, base_dir, others
 
 
 def pad(x, max_len=64600):
@@ -62,13 +72,9 @@ def pad_random(x: Tensor, max_len: int = 64600):
     return padded_x
 
 class Dataset_Codec_Antispoofing(Dataset):
-    def __init__(self, list_IDs, labels, base_dir, others=None):
-        """self.list_IDs	: list of strings (each string: utt key),
-        self.labels      : dictionary (key: utt key, value: label integer)"""
+    def __init__(self, list_IDs, labels, base_dir, others=None, split="train"):
         self.list_IDs = list_IDs
-        self.labels = labels
-        self.base_dir = base_dir
-        self.others = others  # include [spk, codecname]
+        self.data = load_dataset("rogertseng/CodecFake", split=split)
         self.cut = 64600  # take ~4 sec audio (64600 samples)
         self.resamplers = {
             24000: torchaudio.transforms.Resample(24000, 16000),
@@ -80,9 +86,12 @@ class Dataset_Codec_Antispoofing(Dataset):
 
     def __getitem__(self, index):
         key = self.list_IDs[index]
-        others = self.others[index]
-        X, sr = sf.read(os.path.join(self.base_dir, key))
+        data = self.data[key]
+
+        utt_id = data["audio"]["path"]
+        X = data["audio"]["array"]
         X = torch.from_numpy(X).float()
+        sr = data["audio"]["sampling_rate"]
         # assert sr == 16000
         
         if sr != 16000:
@@ -95,5 +104,6 @@ class Dataset_Codec_Antispoofing(Dataset):
         
         assert len(X.shape) == 1
         x_inp = pad_random(X, self.cut)
-        y = self.labels[key]
-        return x_inp, y, key, others
+        y = 1 if data["label"] == "genuine" else 0
+        others = (data["speaker_id"], data["codec_name"])
+        return x_inp, y, utt_id, others
